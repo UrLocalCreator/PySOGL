@@ -1,7 +1,5 @@
 import sys
 
-import pygame
-
 from Engine.Engine import *
 from Engine.Loader import *
 from Engine.Process import *
