@@ -5,20 +5,6 @@ from Engine.Shaders.Default import *
 
 
 @nb.njit
-def color(R, G, B):
-    rng = np.random.random()
-    R = math.ceil(R) if rng > 0.5 else math.floor(R)
-
-    rng = np.random.random()
-    G = math.ceil(G) if rng > 0.5 else math.floor(G)
-
-    rng = np.random.random()
-    B = math.ceil(B) if rng > 0.5 else math.floor(B)
-
-    return R, G, B
-
-
-@nb.njit
 def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
     A, B, C = vertices
     if (A[0] * B[1] - B[0] * A[1]) + (B[0] * C[1] - C[0] * B[1]) + (C[0] * A[1] - A[0] * C[1]) >= 0:
@@ -63,9 +49,9 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
                 if zv < zbuffer[x][y]:
                     
                     zbuffer[x][y] = zv
-                    zv = 1 / (zv)
+                    zv = 1 / zv
 
-                    surface[x, y] = (color(zv * 255, zv * 255, zv * 255))
+                    surface[x, y] = (zv * 255, zv * 255, zv * 255)
     return surface
     
 

@@ -26,12 +26,7 @@ def init_surface(Res, scale):
     return screen_buffer, zbuffer
 
 
-def FXAA(surface):
-    modified_surface = surface
-    lum = surface
-    # for y in nb.prange(len(surface)):
-    #     for x in nb.prange(len(surface[y])):
-    #         lum[y][x][0] = ((np.dot(surface[y][x], (0.299, 0.587, 0.114)) + 1) / 2) * 255
-    #         modified_surface[y][x][0:3] = lum[y][x][0]
-            
-    return modified_surface
+@nb.njit
+def anti_aliasing(surface):
+    return surface
+
