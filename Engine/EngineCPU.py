@@ -9,18 +9,14 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
     A, B, C = vertices
     if (A[0] * B[1] - B[0] * A[1]) + (B[0] * C[1] - C[0] * B[1]) + (C[0] * A[1] - A[0] * C[1]) >= 0:
         epsilon = 1e-32
-
         VertexData = shader(tri)
-
         z = 1 / (z + epsilon)
         d1 = B[1] - C[1]
         d2 = A[0] - C[0]
         d3 = C[0] - B[0]
         d4 = C[1] - A[1]
         d5 = d1 * d2 - d3 * d4 + epsilon
-
         vt = vertices[vertices[:, 1].argsort()]
-
         slope1 = (vt[2][0] - vt[0][0]) / (vt[2][1] - vt[0][1] + epsilon)
         slope2 = (vt[1][0] - vt[0][0]) / (vt[1][1] - vt[0][1] + epsilon)
         slope3 = (vt[2][0] - vt[1][0]) / (vt[2][1] - vt[1][1] + epsilon)
@@ -47,13 +43,10 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
 
                 zv = 1 / (z[0] * u + z[1] * v + z[2] * w)
                 if zv < zbuffer[x][y]:
-                    
                     zbuffer[x][y] = zv
                     zv = 1 / zv
-
-                    surface[x, y] = (zv * 255, zv * 255, zv * 255)
+                    surface[x, y] = (int(zv * 255), int(zv * 255), int(zv * 255))
     return surface
-    
 
 @nb.njit
 def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res):
@@ -129,6 +122,7 @@ def project(vertices, FOV, ResF, Res):
         projected[i, 1] = Res[1] / 2 - projected[i, 1]
 
     return projected
+
 
 def renderCPU(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData):
     camera = np.asarray(camera)
