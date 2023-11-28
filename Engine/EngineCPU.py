@@ -48,6 +48,7 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
                     surface[x, y] = (int(zv * 255), int(zv * 255), int(zv * 255))
     return surface
 
+
 @nb.njit
 def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res):
     for i in nb.prange(len(faces)):
