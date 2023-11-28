@@ -4,13 +4,13 @@ from Engine.Loader import *
 from Engine.Shaders.Default import *
 
 
-@nb.njit
+@nb.njit(cache=True, nogil=True)
 def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
     A, B, C = vertices
     if (A[0] * B[1] - B[0] * A[1]) + (B[0] * C[1] - C[0] * B[1]) + (C[0] * A[1] - A[0] * C[1]) >= 0:
         epsilon = 1e-32
+        z = 1 / z
         VertexData = shader(tri)
-        z = 1 / (z + epsilon)
         d1 = B[1] - C[1]
         d2 = A[0] - C[0]
         d3 = C[0] - B[0]
@@ -41,22 +41,21 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
                 v = (d4 * d6 + d2 * d7) / d5
                 w = 1.0 - (u + v)
 
-                zv = 1 / (z[0] * u + z[1] * v + z[2] * w)
+                zv = z[0] * u + z[1] * v + z[2] * w
+                zv = 1 / zv
                 if zv < zbuffer[x][y]:
                     zbuffer[x][y] = zv
                     zv = 1 / zv
-                    surface[x, y] = (int(zv * 255), int(zv * 255), int(zv * 255))
+                    zv = int(zv * 255)
+                    surface[x, y] = (zv, zv, zv)
     return surface
 
 
-@nb.njit
+@nb.njit(cache=True, nogil=True)
 def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res):
     for i in nb.prange(len(faces)):
         j = faces[i]
-        tri = np.zeros((3, 3), dtype=float)
-        tri[0] = tris[j[0]]
-        tri[1] = tris[j[1]]
-        tri[2] = tris[j[2]]
+
         vert1 = vertices[j[0]]
         vert2 = vertices[j[1]]
         vert3 = vertices[j[2]]
@@ -64,20 +63,24 @@ def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res):
         vert[0] = vert1[0:2]
         vert[1] = vert2[0:2]
         vert[2] = vert3[0:2]
+        tri = np.zeros((3, 3), dtype=float)
+        tri[0] = tris[j[0]]
+        tri[1] = tris[j[1]]
+        tri[2] = tris[j[2]]
+
         z = np.array([vert1[2], vert2[2], vert3[2]])
         surface = fill_triangle(surface, zbuffer, vert, tri, z, Res)
     return surface
 
 
-@nb.njit
+@nb.njit(cache=True, nogil=True)
 def translate(vertices, position):
     rad = math.pi / 180
-    scale = position[6]
+    vertices *= position[6]
     rotated = position[3:6]
     position = position[0:3]
     translated = np.zeros_like(vertices)
 
-    vertices *= scale
     cosX = rotated[0] * rad
     sinX = math.sin(cosX)
     cosX = math.cos(cosX)
@@ -107,20 +110,19 @@ def translate(vertices, position):
     return translated
 
 
-@nb.njit
+@nb.njit(cache=True, nogil=True)
 def project(vertices, FOV, ResF, Res):
     rad = 180 / math.pi
     FOV = (ResF / 2) / math.tan((FOV / 2) * rad)
-    
     projected = np.empty_like(vertices)
-
     for i in nb.prange(len(vertices)):
         vertex = vertices[i]
         s = FOV / vertex[2]
-        projected[i, 0] = vertex[0] * s
-        projected[i, 1] = vertex[1] * s
-        projected[i, 0] = Res[0] / 2 + projected[i, 0]
-        projected[i, 1] = Res[1] / 2 - projected[i, 1]
+        vertex[0] = vertex[0] * s
+        vertex[1] = vertex[1] * s
+        vertex[0] = Res[0] / 2 + vertex[0]
+        vertex[1] = Res[1] / 2 - vertex[1]
+        projected[i] = vertex[0:3]
 
     return projected
 
