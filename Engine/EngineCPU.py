@@ -4,13 +4,13 @@ from Engine.Loader import *
 from Engine.Shaders.Default import *
 
 
-@nb.njit(cache=True, nogil=True)
+@nb.njit(nogil=True)
 def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
     A, B, C = vertices
     if (A[0] * B[1] - B[0] * A[1]) + (B[0] * C[1] - C[0] * B[1]) + (C[0] * A[1] - A[0] * C[1]) >= 0:
         epsilon = 1e-32
         z = 1 / z
-        VertexData = shader(tri)
+        VData = shader(tri)
         d1 = B[1] - C[1]
         d2 = A[0] - C[0]
         d3 = C[0] - B[0]
@@ -46,12 +46,11 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
                 if zv < zbuffer[x][y]:
                     zbuffer[x][y] = zv
                     zv = 1 / zv
-                    zv = int(zv * 255)
-                    surface[x, y] = (zv, zv, zv)
+                    surface[x, y] = fragment(VData, zv)
     return surface
 
 
-@nb.njit(cache=True, nogil=True)
+@nb.njit(nogil=True)
 def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res):
     for i in nb.prange(len(faces)):
         j = faces[i]
@@ -73,7 +72,7 @@ def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res):
     return surface
 
 
-@nb.njit(cache=True, nogil=True)
+@nb.njit(nogil=True)
 def translate(vertices, position):
     rad = math.pi / 180
     vertices *= position[6]
@@ -110,7 +109,7 @@ def translate(vertices, position):
     return translated
 
 
-@nb.njit(cache=True, nogil=True)
+@nb.njit(nogil=True)
 def project(vertices, FOV, ResF, Res):
     rad = 180 / math.pi
     FOV = (ResF / 2) / math.tan((FOV / 2) * rad)

@@ -17,7 +17,7 @@ def render(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData
     return Objects, ObjectData, surface
 
 
-@nb.njit(cache=True, nogil=True)
+@nb.njit(nogil=True)
 def init_surface(Res, scale):
 
     Res = np.asarray(Res) * scale
