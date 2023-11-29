@@ -1,4 +1,3 @@
-import random
 
 import numba as nb
 import numpy as np
@@ -7,41 +6,40 @@ import math
 
 @nb.njit(nogil=True)
 def cross(a, b):
-    norm = np.zeros_like(a)
-    norm[0] = a[1] * b[2] - a[2] * b[1]
-    norm[1] = a[2] * b[0] - a[0] * b[2]
-    norm[2] = a[0] * b[1] - a[1] * b[0]
-    return norm
+    return np.array([a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0]])
 
 
 @nb.njit(nogil=True)
 def normalize(a):
     dist = np.sqrt(np.sum(a**2))
-    a /= dist
-    return a
+    return a / dist
 
 
 @nb.njit(nogil=True)
 def shader(vertices):
     x, y, z = vertices
     normal = cross(y - x, z - x)
-    normalize(normal)
+    normal = normalize(normal)
     return [normal]
 
 
 @nb.njit(nogil=True)
-def dither(color):
+def dither(x, y, color, colors, dith):
+    colors = 256 / colors
+    color /= colors
     for i in nb.prange(len(color)):
-        j = color[i]
-        color[i] = math.floor(j) if (np.random.random() > j - math.floor(j)) else math.ceil(j)
+        if dith:
+            j = color[i]
+            color[i] = np.floor(j) if (np.random.random() > j - np.floor(j)) else np.ceil(j)
+        color[i] = np.round(color[i])
+    color *= colors
     return color
 
 
 @nb.njit(nogil=True)
-def fragment(VData, zv):
-    normal = VData[0] + 1
-    normal /= 2
+def fragment(x, y, VData, zv):
+    normal = (VData[0] + 1) / 2
     normal[2] = 1 - normal[2]
     normal *= 255 * zv
-    color = dither(normal)
+    color = dither(x, y, normal, 256, True)
     return color

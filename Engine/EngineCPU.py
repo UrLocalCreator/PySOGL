@@ -46,7 +46,7 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
                 if zv < zbuffer[x][y]:
                     zbuffer[x][y] = zv
                     zv = 1 / zv
-                    surface[x, y] = fragment(VData, zv)
+                    surface[x, y] = fragment(x, y, VData, zv)
     return surface
 
 
