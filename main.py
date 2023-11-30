@@ -20,14 +20,19 @@ while running:
     light = []
     Camera = [0, 0, 0, 0, 0, 0, 60]
     #RRResolutionX, RRResolutionY = 128, 72
-    RRResolutionX, RRResolutionY = 640, 360
+    RRResolutionX, RRResolutionY = np.array([640, 360])
     ResolutionX, ResolutionY, RResolutionX, RResolutionY = resize_window(RRResolutionX, RRResolutionY)
     screen.fill((0, 0, 0))
 
     screen_buffer, zbuffer = init_surface(np.array([RResolutionX, RResolutionY]), 1)
     light.append([[4, 0, -4], [5, 5, 5]])
 
-    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
+    mx, my = pygame.mouse.get_pos()
+    mx = (-mx / ResolutionX) * 640
+    my = (-my / ResolutionY) * 360
+    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 135, my - 90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
+    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, mx + 135, my + 90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
+    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
     #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, time / 100, -90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
 
     screen_buffer = anti_aliasing(screen_buffer)
