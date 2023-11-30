@@ -18,6 +18,7 @@ otime = time
 print(pygame.display.Info())
 while running:
     Camera = [0, 0, 0, 0, 0, 0, 60]
+    #RRResolutionX, RRResolutionY = 128, 72
     RRResolutionX, RRResolutionY = 640, 360
     ResolutionX, ResolutionY, RResolutionX, RResolutionY = resize_window(RRResolutionX, RRResolutionY)
     screen.fill((0, 0, 0))

@@ -117,10 +117,8 @@ def project(vertices, FOV, ResF, Res):
     for i in nb.prange(len(vertices)):
         vertex = vertices[i]
         s = FOV / vertex[2]
-        vertex[0] = vertex[0] * s
-        vertex[1] = vertex[1] * s
-        vertex[0] = Res[0] / 2 + vertex[0]
-        vertex[1] = Res[1] / 2 - vertex[1]
+        vertex[0] = Res[0] / 2 + vertex[0] * s
+        vertex[1] = Res[1] / 2 - vertex[1] * s
         projected[i] = vertex[0:3]
 
     return projected
