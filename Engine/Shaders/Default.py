@@ -45,5 +45,5 @@ def fragment(xyz, VData, tri):
     normal[2] = 1 - normal[2]
     normal *= 255 / xyz[2]
     color = normal
-    color = pixel_filter(xyz, color, 32, True)
+    color = pixel_filter(xyz, color, 255, True)
     return color
