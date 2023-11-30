@@ -24,15 +24,16 @@ def shader(vertices):
 
 
 @nb.njit(nogil=True)
-def dither(x, y, color, colors, dith):
-    colors = 256 / colors
+def pixel_filter(x, y, color, colors, dith):
+    colors = 255 / colors
     color /= colors
     for i in nb.prange(len(color)):
         if dith:
             j = color[i]
             color[i] = np.floor(j) if (np.random.random() > j - np.floor(j)) else np.ceil(j)
-        color[i] = np.round(color[i])
-    color *= colors
+        color[i] = np.round(color[i]) * colors
+        if color[i] > 255:
+            color[i] = 255
     return color
 
 
@@ -40,6 +41,6 @@ def dither(x, y, color, colors, dith):
 def fragment(x, y, VData, zv):
     normal = (VData[0] + 1) / 2
     normal[2] = 1 - normal[2]
-    normal *= 255 * zv
-    color = dither(x, y, normal, 256, True)
+    normal *= 255
+    color = pixel_filter(x, y, normal, 255, True)
     return color
