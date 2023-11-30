@@ -12,8 +12,8 @@ def resize_window(RRResolutionX, RRResolutionY):
     return ResolutionX, ResolutionY, RResolutionX, RResolutionY
 
 
-def render(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData):
-    Objects, ObjectData, surface = renderCPU(objectn, position, camera, surface, zbuffer, np.array(Res), Objects, ObjectData)
+def render(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData, light):
+    Objects, ObjectData, surface = renderCPU(objectn, position, camera, surface, zbuffer, np.array(Res), Objects, ObjectData, light)
     return Objects, ObjectData, surface
 
 

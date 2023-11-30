@@ -45,8 +45,7 @@ def fill_triangle(surface, zbuffer, vertices, tri, z, Res):
                 zv = 1 / zv
                 if zv < zbuffer[x][y]:
                     zbuffer[x][y] = zv
-                    zv = 1 / zv
-                    surface[x, y] = fragment(x, y, VData, zv)
+                    surface[x, y] = fragment([x, y, zv], VData, tri)
     return surface
 
 
@@ -124,7 +123,8 @@ def project(vertices, FOV, ResF, Res):
     return projected
 
 
-def renderCPU(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData):
+def renderCPU(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData, light):
+    light = np.asarray(light)
     camera = np.asarray(camera)
     
     if objectn in Objects:

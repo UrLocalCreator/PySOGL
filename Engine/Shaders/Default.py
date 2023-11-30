@@ -1,7 +1,8 @@
-
+import random
 import numba as nb
 import numpy as np
 import math
+from Engine.Noise import *
 
 
 @nb.njit(nogil=True)
@@ -16,21 +17,21 @@ def normalize(a):
 
 
 @nb.njit(nogil=True)
-def shader(vertices):
-    x, y, z = vertices
-    normal = cross(y - x, z - x)
-    normal = normalize(normal)
+def shader(tri):
+    normal = normalize(cross(tri[1] - tri[0], tri[2] - tri[0]))
     return [normal]
 
 
 @nb.njit(nogil=True)
-def pixel_filter(x, y, color, colors, dith):
+def pixel_filter(xyz, color, colors, dith):
     colors = 255 / colors
     color /= colors
     for i in nb.prange(len(color)):
         if dith:
             j = color[i]
-            color[i] = np.floor(j) if (np.random.random() > j - np.floor(j)) else np.ceil(j)
+            c = noise(xyz, 9834579) / 999999999999999
+            #c = random.random()
+            color[i] = np.floor(j) if (c > j - np.floor(j)) else np.ceil(j)
         color[i] = np.round(color[i]) * colors
         if color[i] > 255:
             color[i] = 255
@@ -38,9 +39,11 @@ def pixel_filter(x, y, color, colors, dith):
 
 
 @nb.njit(nogil=True)
-def fragment(x, y, VData, zv):
+def fragment(xyz, VData, tri):
+
     normal = (VData[0] + 1) / 2
     normal[2] = 1 - normal[2]
-    normal *= 255
-    color = pixel_filter(x, y, normal, 255, True)
+    normal *= 255 / xyz[2]
+    color = normal
+    color = pixel_filter(xyz, color, 32, True)
     return color

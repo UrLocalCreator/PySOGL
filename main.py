@@ -17,6 +17,7 @@ time = pygame.time.get_ticks()
 otime = time
 print(pygame.display.Info())
 while running:
+    light = []
     Camera = [0, 0, 0, 0, 0, 0, 60]
     #RRResolutionX, RRResolutionY = 128, 72
     RRResolutionX, RRResolutionY = 640, 360
@@ -24,9 +25,10 @@ while running:
     screen.fill((0, 0, 0))
 
     screen_buffer, zbuffer = init_surface(np.array([RResolutionX, RResolutionY]), 1)
+    light.append([[4, 0, -4], [5, 5, 5]])
 
-    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData)
-    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, time / 100, -90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData)
+    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
+    Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, time / 100, -90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
 
     screen_buffer = anti_aliasing(screen_buffer)
     screen_surface = pygame.surfarray.make_surface(screen_buffer)
