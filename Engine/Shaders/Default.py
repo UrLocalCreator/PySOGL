@@ -31,6 +31,7 @@ def dither(x, y, color, colors, dith):
         if dith:
             j = color[i]
             color[i] = np.floor(j) if (np.random.random() > j - np.floor(j)) else np.ceil(j)
+        #random_vals = np.random.random(len(color))
         color[i] = np.round(color[i])
     color *= colors
     return color
