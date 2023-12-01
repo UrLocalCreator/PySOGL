@@ -28,9 +28,12 @@ while running:
     light.append([[4, 0, -4], [5, 5, 5]])
 
     mx, my = pygame.mouse.get_pos()
-    mx = (-mx / ResolutionX) * 640
-    my = (-my / ResolutionY) * 360
-    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 135, my - 90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
+    mx = (0.5 - mx / ResolutionX) * 640
+    my = (0.5 - my / ResolutionY) * 360
+
+    mz = my * math.sin(mx * (math.pi/180))
+    my = 0
+    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 180,  my + 90, mz, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
     #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, mx + 135, my + 90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
     #Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
     #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, time / 100, -90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
