@@ -4,7 +4,7 @@ from Engine.Engine import *
 from Engine.Loader import *
 from Engine.Process import *
 
-lowpriority()
+priority()
 
 pygame.init()
 img = pygame.image.load('Icon.png')
@@ -17,40 +17,36 @@ time = pygame.time.get_ticks()
 otime = time
 print(pygame.display.Info())
 while running:
-    light = []
+    lights = []
     Camera = [0, 0, 0, 0, 0, 0, 60]
-    #RRResolutionX, RRResolutionY = 128, 72
-    RRResolutionX, RRResolutionY = np.array([640, 360])
+    RRResolutionX, RRResolutionY = 640, 360
+    #RRResolutionX, RRResolutionY = np.array([160, 90])
     ResolutionX, ResolutionY, RResolutionX, RResolutionY = resize_window(RRResolutionX, RRResolutionY)
     screen.fill((0, 0, 0))
 
     screen_buffer, zbuffer = init_surface(np.array([RResolutionX, RResolutionY]), 1)
-    light.append([[4, 0, -4], [5, 5, 5]])
+    rad = math.pi/180
+    rad *= otime/10
+    lights.append([[-4, 0, -7 + 3 * math.cos(rad)], [2, 1, 0]])
+    lights.append([[10 + 3 * math.sin(rad), 0, 3], [0, 1, 2]])
 
     mx, my = pygame.mouse.get_pos()
     mx = (0.5 - mx / ResolutionX) * 640
     my = (0.5 - my / ResolutionY) * 360
-
-    mz = my * math.sin(mx * (math.pi/180))
-    my = 0
-    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 180,  my + 90, mz, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
-    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, mx + 135, my + 90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
-    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
-    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, time / 100, -90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, light)
+    #mx, my = 0, 0
+    Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 180,  my + 90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, lights)
+    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, mx + 180, -90, 0, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, lights)
+    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, lights)
+    #Objects, ObjectData, screen_buffer = render("Engine/Objects/Ayaka/Ayaka.obj", [0, -10, 20, time / 100, -90, 90, 1], Camera, screen_buffer, zbuffer, [RResolutionX, RResolutionY], Objects, ObjectData, lights)
 
     screen_buffer = anti_aliasing(screen_buffer)
     screen_surface = pygame.surfarray.make_surface(screen_buffer)
     screen_surface = pygame.transform.scale(screen_surface, (ResolutionX, ResolutionY))
     screen.blit(screen_surface, (0, 0))
-    pygame.display.flip()
-    time = pygame.time.get_ticks()
-    fps = 1 / ((time - otime) / 1000 + 1e-32)
-    otime = time
-    pygame.display.set_caption("SOGL - FPS: " + str(round(fps)))
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    fps, otime = FPS(otime)
+    name("SOGL - FPS: " + str(round(fps)))
+    running = check(running)
 
 pygame.quit()
 sys.exit()

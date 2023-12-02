@@ -12,6 +12,24 @@ def resize_window(RRResolutionX, RRResolutionY):
     return ResolutionX, ResolutionY, RResolutionX, RResolutionY
 
 
+def name(n):
+    pygame.display.set_caption(n)
+
+
+def FPS(otime):
+    time = pygame.time.get_ticks()
+    fps = 1 / ((time - otime) / 1000 + 1e-32)
+    otime = time
+    return fps, otime
+
+
+def check(running):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    pygame.display.flip()
+    return running
+
 def render(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData, light):
     Objects, ObjectData, surface = renderCPU(objectn, position, camera, surface, zbuffer, np.array(Res), Objects, ObjectData, light)
     return Objects, ObjectData, surface

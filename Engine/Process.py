@@ -1,4 +1,4 @@
-def lowpriority():
+def priority():
     """ Set the priority of the process to below-normal."""
     import sys
     try:
@@ -12,6 +12,7 @@ def lowpriority():
         pid = win32api.GetCurrentProcessId()
         handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
         win32process.SetPriorityClass(handle, win32process.REALTIME_PRIORITY_CLASS)
+        win32process.SetProcessPriorityBoost(handle, win32process.REALTIME_PRIORITY_CLASS)
     else:
         import os
         os.nice(1)
