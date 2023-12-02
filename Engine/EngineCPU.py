@@ -80,7 +80,7 @@ def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res, lights):
     return surface
 
 
-@nb.njit(nogil=True, parallel=True, fastmath=True)
+@nb.njit(nogil=True, fastmath=True, parallel=True)
 def translate(vertices, position):
     rad = math.pi / 180
     vertices *= position[6]
@@ -115,10 +115,8 @@ def translate(vertices, position):
 
     return translated
 
-    return translated
 
-
-@nb.njit(nogil=True, parallel=True, fastmath=True)
+@nb.njit(nogil=True, fastmath=True, parallel=True)
 def project(vertices, FOV, ResF, Res):
     rad = 180 / math.pi
     FOV = (ResF / 2) / math.tan((FOV / 2) * rad)
