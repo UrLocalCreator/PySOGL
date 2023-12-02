@@ -44,7 +44,7 @@ def pixel_filter(xyz, color, colors, dith):
 
 
 @nb.njit(nogil=True, fastmath=True)
-def fragment(xyz, VData, tri, lights):
+def fragment(xyz, VData, lights, colors, dith):
     color = np.array([255.0, 255.0, 255.0])
     lcolor = np.copy(color)
     color = np.zeros_like(lcolor)
@@ -68,5 +68,24 @@ def fragment(xyz, VData, tri, lights):
             check[j] *= lightr
             color[j] += check[j]
 
-    color = pixel_filter(xyz, color, 255, True)
+    # Dithering
+    colors = 255 / colors
+    if colors > 1:
+        color /= colors
+    if dith:
+        for i in nb.prange(len(color)):
+            j = color[i]
+            seed = 9834579
+            x, y, z = xyz
+            seed = seed * 315325887822453 + 141861939145533
+            x = x * 315325887822453 + 141861939145533
+            y = y * 315325887822453 + 141861939145533
+            z = z * 315325887822453 + 141861939145533
+            c = ((seed * x * y * z) % 999999999999999) / 999999999999999
+            color[i] = np.floor(j) if (c > j - np.floor(j)) else np.ceil(j)
+    color = np.round(color)
+    if colors > 1:
+        color = color * colors
+
+    color = np.minimum(255, color)
     return color

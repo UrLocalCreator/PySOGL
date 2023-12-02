@@ -75,7 +75,7 @@ def fill_object(faces, vertices, tris, uvs, surface, zbuffer, Res, lights):
                         zbuffer[x, y] = zv
 
                         xyz = tri1 * u + tri2 * v + tri3 * w
-                        surface[x, y] = fragment(xyz, VData, [tri1, tri2, tri3], lights)
+                        surface[x, y] = fragment(xyz, VData, lights, 255, True)
 
     return surface
 
