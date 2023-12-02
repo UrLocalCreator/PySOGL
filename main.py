@@ -29,7 +29,6 @@ while running:
     rad *= otime/10
     lights.append([[-4, 0, -7 + 3 * math.cos(rad)], [2, 1, 0]])
     lights.append([[10 + 3 * math.sin(rad), 0, 3], [0, 1, 2]])
-
     mx, my = pygame.mouse.get_pos()
     mx = (0.5 - mx / ResolutionX) * 640
     my = (0.5 - my / ResolutionY) * 360
