@@ -16,10 +16,15 @@ def name(n):
     pygame.display.set_caption(n)
 
 
+def icon(n):
+    pygame.display.set_icon(pygame.image.load(n))
+
+
 def FPS(otime):
     time = pygame.time.get_ticks()
-    fps = 1 / ((time - otime) / 1000 + 1e-32)
-    otime = time
+    dtime = time - otime
+    fps = 1 / (dtime / 1000 + 1e-32)
+    otime += dtime
     return fps, otime
 
 
@@ -30,21 +35,17 @@ def check(running):
     pygame.display.flip()
     return running
 
-def render(objectn, position, camera, surface, zbuffer, Res, Objects, ObjectData, light):
-    Objects, ObjectData, surface = renderCPU(objectn, position, camera, surface, zbuffer, np.array(Res), Objects, ObjectData, light)
-    return Objects, ObjectData, surface
 
+def render(scene, camera, surface, zbuffer, Res, Objects, ObjectData, light, screen_buffer, SRes, screen):
+    screen.fill((0, 0, 0))
+    renderCPU(scene, camera, surface, zbuffer, np.array(Res), Objects, ObjectData, light)
+    screen_surface = pygame.surfarray.make_surface(screen_buffer)
+    screen_surface = pygame.transform.scale(screen_surface, SRes)
+    screen.blit(screen_surface, (0, 0))
 
 @nb.njit(nogil=True)
 def init_surface(Res, scale):
-
     Res = np.asarray(Res) * scale
     screen_buffer = np.zeros((Res[0], Res[1], 3), dtype=np.int32)
     zbuffer = np.zeros((Res[0], Res[1])) + 1e32
     return screen_buffer, zbuffer
-
-
-@nb.njit
-def anti_aliasing(surface):
-    return surface
-
