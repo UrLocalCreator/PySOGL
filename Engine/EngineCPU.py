@@ -132,7 +132,7 @@ def renderCPU(scene, camera, surface, zbuffer, Res, Objects, ObjectData, lights)
         if objectn in Objects:
             vertices, uvs, faces = ObjectData[Objects.index(objectn)]
         else:
-            vertices, uvs, faces = unload_object(load_obj(objectn))
+            vertices, uvs, faces = load_obj(objectn)
             Objects.append(objectn)
             ObjectData.append([vertices, uvs, faces])
 
