@@ -1,7 +1,7 @@
 import numpy as np
 import numba as nb
 
-@nb.njit
+
 def load_obj(file_name):
     vertices = []
     uvs = []
