@@ -7,10 +7,10 @@ from Engine.Shaders.Default import *
 def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
     for i in nb.prange(len(faces)):
         j = faces[i]
-
-        vert1 = vertices[j[0]]
-        vert2 = vertices[j[1]]
-        vert3 = vertices[j[2]]
+        vert = vertices[j]
+        vert1 = vert[0]
+        vert2 = vert[1]
+        vert3 = vert[2]
 
         x1, y1, z1 = vert1
         x2, y2, z2 = vert2
@@ -31,20 +31,20 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
                 epsilon = 1e-32
                 z = 1 / z
 
-                VData = shader([tri1, tri2, tri3])
-
                 d1 = y2 - y3
                 d2 = x1 - x3
                 d3 = x3 - x2
                 d4 = y3 - y1
                 d5 = d1 * d2 - d3 * d4 + epsilon
-                vt = np.zeros((3, 3), dtype=float)
-                vt[0], vt[1], vt[2] = vert1, vert2, vert3
+                vt = vert
+
                 vt = vt[vt[:, 1].argsort()]
 
                 slope1 = (vt[2, 0] - vt[0, 0]) / (vt[2, 1] - vt[0, 1] + epsilon)
                 slope2 = (vt[1, 0] - vt[0, 0]) / (vt[1, 1] - vt[0, 1] + epsilon)
                 slope3 = (vt[2, 0] - vt[1, 0]) / (vt[2, 1] - vt[1, 1] + epsilon)
+
+                VData = shader([tri1, tri2, tri3])
 
                 y1 = max(math.ceil(vt[0, 1]), 0)
                 y2 = min(math.ceil(vt[2, 1]), Res[1] - 1)
@@ -85,14 +85,10 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
 @nb.njit(nogil=True, fastmath=True, parallel=True)
 def translate(vertices, position):
     rad = math.pi / 180
-    vertices *= position[6]
-    rotated = position[3:6]
-    position = position[0:3]
     translated = np.empty_like(vertices)
-
-    cosX, sinX = np.cos(rotated[0] * rad), np.sin(rotated[0] * rad)
-    cosY, sinY = np.cos(rotated[1] * rad), np.sin(rotated[1] * rad)
-    cosZ, sinZ = np.cos(rotated[2] * rad), np.sin(rotated[2] * rad)
+    cosX, sinX = np.cos(position[3] * rad), np.sin(position[3] * rad)
+    cosY, sinY = np.cos(position[4] * rad), np.sin(position[4] * rad)
+    cosZ, sinZ = np.cos(position[5] * rad), np.sin(position[5] * rad)
 
     for i in nb.prange(len(vertices)):
         x, y, z = vertices[i]
@@ -108,24 +104,20 @@ def translate(vertices, position):
         x += position[0]
         y += position[1]
         z += position[2]
-        translated[i, 0] = x
-        translated[i, 1] = y
-        translated[i, 2] = z
-
-    return translated
+        translated[i] = [x, y, z]
+    return translated * position[6]
 
 
 @nb.njit(nogil=True, fastmath=True, parallel=True)
 def project(vertices, FOV, ResF, Res):
-    rad = 180 / np.pi
-    FOV = (ResF / 2) / np.tan((FOV / 2) * rad)
+    FOV = (ResF / 2) / np.tan((FOV / 2) * (180 / np.pi))
     projected = np.empty_like(vertices)
     for i in nb.prange(len(vertices)):
         vertex = vertices[i]
         s = FOV / vertex[2]
         vertex[0] = Res[0] / 2 + vertex[0] * s
         vertex[1] = Res[1] / 2 - vertex[1] * s
-        projected[i] = vertex[0:3]
+        projected[i] = vertex
 
     return projected
 
@@ -143,6 +135,7 @@ def renderCPU(scene, camera, surface, zbuffer, Res, Objects, ObjectData, lights)
             vertices, uvs, faces = unload_object(load_obj(objectn))
             Objects.append(objectn)
             ObjectData.append([vertices, uvs, faces])
+
         vertices = translate(vertices, np.asarray(position))
         tris = vertices
         fov = camera[6]
