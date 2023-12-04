@@ -17,13 +17,15 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
         x3, y3, z3 = vert3
 
         if z1 > 0 and z2 > 0 and z3 > 0:
-
             z = np.array([z1, z2, z3])
 
             # Simplified condition for triangle orientation check
             orientation = (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) >= 0
 
             if orientation:
+                vx = vert[vert[:, 0].argsort()]
+                vy = vert[vert[:, 1].argsort()]
+
                 tri1 = tris[j[0]]
                 tri2 = tris[j[1]]
                 tri3 = tris[j[2]]
@@ -36,26 +38,25 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
                 d3 = x3 - x2
                 d4 = y3 - y1
                 d5 = d1 * d2 - d3 * d4 + epsilon
-                vt = vert
 
-                vt = vt[vt[:, 1].argsort()]
 
-                slope1 = (vt[2, 0] - vt[0, 0]) / (vt[2, 1] - vt[0, 1] + epsilon)
-                slope2 = (vt[1, 0] - vt[0, 0]) / (vt[1, 1] - vt[0, 1] + epsilon)
-                slope3 = (vt[2, 0] - vt[1, 0]) / (vt[2, 1] - vt[1, 1] + epsilon)
+
+                slope1 = (vy[2, 0] - vy[0, 0]) / (vy[2, 1] - vy[0, 1] + epsilon)
+                slope2 = (vy[1, 0] - vy[0, 0]) / (vy[1, 1] - vy[0, 1] + epsilon)
+                slope3 = (vy[2, 0] - vy[1, 0]) / (vy[2, 1] - vy[1, 1] + epsilon)
 
                 VData = shader([tri1, tri2, tri3])
 
-                y1 = max(math.ceil(vt[0, 1]), 0)
-                y2 = min(math.ceil(vt[2, 1]), Res[1] - 1)
+                y1 = max(math.ceil(vy[0, 1]), 0)
+                y2 = min(math.ceil(vy[2, 1]), Res[1] - 1)
 
                 for y in nb.prange(y1, y2):
-                    dy = y - vt[0, 1]
-                    x1 = vt[0, 0] + slope1 * dy
-                    if y < vt[1, 1]:
-                        x2 = vt[0, 0] + slope2 * dy
+                    dy = y - vy[0, 1]
+                    x1 = vy[0, 0] + slope1 * dy
+                    if y < vy[1, 1]:
+                        x2 = vy[0, 0] + slope2 * dy
                     else:
-                        x2 = vt[1, 0] + slope3 * (y - vt[1, 1])
+                        x2 = vy[1, 0] + slope3 * (y - vy[1, 1])
 
                     if x1 > x2:
                         x1, x2 = x2, x1
@@ -82,30 +83,27 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
     return surface
 
 
-@nb.njit(nogil=True, fastmath=True, parallel=True)
+@nb.njit(nogil=True, fastmath=True)
 def translate(vertices, position):
     rad = math.pi / 180
-    translated = np.empty_like(vertices)
-    cosX, sinX = np.cos(position[3] * rad), np.sin(position[3] * rad)
-    cosY, sinY = np.cos(position[4] * rad), np.sin(position[4] * rad)
-    cosZ, sinZ = np.cos(position[5] * rad), np.sin(position[5] * rad)
+    cosX, sinX = math.cos(position[3] * rad), math.sin(position[3] * rad)
+    cosY, sinY = math.cos(position[4] * rad), math.sin(position[4] * rad)
+    cosZ, sinZ = math.cos(position[5] * rad), math.sin(position[5] * rad)
 
-    for i in nb.prange(len(vertices)):
-        x, y, z = vertices[i]
-        s = y
-        y = z * sinY + s * cosY
-        z = z * cosY - s * sinY
-        s = x
-        x = z * sinX + s * cosX
-        z = z * cosX - s * sinX
-        s = x
-        x = y * sinZ + s * cosZ
-        y = y * cosZ - s * sinZ
-        x += position[0]
-        y += position[1]
-        z += position[2]
-        translated[i] = [x, y, z]
-    return translated * position[6]
+    scale_factor = position[6]
+    scaled_vertices = vertices * scale_factor
+
+    x, y, z = scaled_vertices.T
+
+    y, z = z * sinY + y * cosY, z * cosY - y * sinY
+    x, z = z * sinX + x * cosX, z * cosX - x * sinX
+    x, y = y * sinZ + x * cosZ, y * cosZ - x * sinZ
+
+    translated = np.column_stack((x, y, z))
+
+    translated += position[:3]
+
+    return translated
 
 
 @nb.njit(nogil=True, fastmath=True, parallel=True)
