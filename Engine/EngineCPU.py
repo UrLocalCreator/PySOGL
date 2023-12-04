@@ -6,6 +6,8 @@ from Engine.Shaders.Default import *
 @nb.njit(nogil=True, parallel=True, fastmath=True)
 def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
     for i in nb.prange(len(faces)):
+        vnormals = 0
+    for i in nb.prange(len(faces)):
         j = faces[i]
         vert = vertices[j]
         min_x = max(min(vert[:, 0]), 0)

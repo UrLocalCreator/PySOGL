@@ -22,31 +22,24 @@ def shader(tri):
 
 @nb.njit(nogil=True, fastmath=True)
 def fragment(xyz, cam, uvw, VData, lights, colors, dith, diffuse):
-    color = np.array([255.0, 255.0, 255.0])
+    lcolor = np.array([255.0, 255.0, 255.0])
     n = VData[0]
-    lcolor = color.copy()
     color = np.zeros_like(lcolor)
-
     d_norm = normalize(cam - xyz)
-
     for i in nb.prange(len(lights)):
         light = lights[i]
         d = light[0] - xyz
-        dist = np.sqrt(np.sum(d ** 2))
+        dist = np.sqrt(np.sum(d ** 2)) ** 1.2
         light_intensity = light[1] / dist
-        check = lcolor.copy()
-        d = normalize(d)
-
-        a = d[0] * n[0] + d[1] * n[1] + d[2] * n[2]
-        v = normalize(d_norm + d)
-
-        spec = np.maximum(0, (v[0] * n[0] + v[1] * n[1] + v[2] * n[2])) ** (1 / (diffuse ** 2))
-        diff = ((a + 1) / 2)
-
-        lightr = light_intensity * (diff + spec)
-        lightr *= lcolor
-        for j in nb.prange(len(lcolor)):
-            color[j] += lightr[j]
+        light_intensity *= lcolor
+        if np.max(light_intensity) > 0:
+            d = normalize(d)
+            a = d[0] * n[0] + d[1] * n[1] + d[2] * n[2]
+            v = normalize(d_norm + d)
+            spec = np.maximum(0, (v[0] * n[0] + v[1] * n[1] + v[2] * n[2])) ** (1 / (diffuse ** 2))
+            diff = ((a + 1) / 2)
+            light_intensity *= diff + spec
+            color += light_intensity
 
     # Dithering
     colors = 255 / colors
