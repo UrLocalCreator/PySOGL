@@ -40,8 +40,8 @@ while running:
     lights.append([[10, 0, 3], [0, 1, 2], [0, 0, 0]])
 
     # scene.append(["Engine/Objects/Ayaka/Ayaka.obj", [0, -1.7, 0.5, mx + 180, -90, 0, 0.1]])
-    # scene.append(["Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 180,  my + 90, 0, 1]])
-    scene.append(["Engine/Objects/Ayaka/Ayaka.obj", [0, -1, 2.5, mx + 180, -90, 0, 0.1]])
+    scene.append(["Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, mx + 180,  my + 90, 0, 1]])
+    # scene.append(["Engine/Objects/Ayaka/Ayaka.obj", [0, -1, 2.5, mx + 180, -90, 0, 0.1]])
     # scene.append(["Engine/Objects/Suzanne/Suzanne.obj", [0, 0, 3, time / 100, 90, 90, 1]])
     # scene.append(["Engine/Objects/Ayaka/Ayaka.obj", [0, -1, 2.5, 180, -90, 0, 0.1]])
 
