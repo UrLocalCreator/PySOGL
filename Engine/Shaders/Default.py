@@ -29,10 +29,13 @@ def fragment(xyz, cam, uvw, VData, lights, colors, dith, diffuse):
     for i in nb.prange(len(lights)):
         light = lights[i]
         d = light[0] - xyz
-        dist = np.sqrt(np.sum(d ** 2)) ** 1.2
+        dist = np.sqrt(np.sum(d ** 2))
+
+        dist = (dist / light[3][0]) ** (1 + light[3][1])
+
         light_intensity = light[1] / dist
         light_intensity *= lcolor
-        if np.max(light_intensity) > 0:
+        if round(np.max(light_intensity)) > 0:
             d = normalize(d)
             diff = ((d[0] * n[0] + d[1] * n[1] + d[2] * n[2] + 1) / 2)
 
