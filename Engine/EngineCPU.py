@@ -83,19 +83,21 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
                                 zbuffer[x, y] = zv
 
                                 xyz = tri1 * u + tri2 * v + tri3 * w
-                                surface[x, y] = fragment(xyz, cam, [u, v, w], VData, lights, 255, True, 0.1)
+                                surface[x, y] = fragment(xyz, cam, [u, v, w], VData, lights, 255, True, 0.2)
 
     return surface
 
 
 @nb.njit(nogil=True, fastmath=True)
 def translate(vertices, position):
+    pos = position[0]
+    rot = position[1]
+    scale_factor = position[2][0]
     rad = math.pi / 180
-    cosX, sinX = math.cos(position[3] * rad), math.sin(position[3] * rad)
-    cosY, sinY = math.cos(position[4] * rad), math.sin(position[4] * rad)
-    cosZ, sinZ = math.cos(position[5] * rad), math.sin(position[5] * rad)
+    cosX, sinX = math.cos(rot[0] * rad), math.sin(rot[0] * rad)
+    cosY, sinY = math.cos(rot[1] * rad), math.sin(rot[1] * rad)
+    cosZ, sinZ = math.cos(rot[2] * rad), math.sin(rot[2] * rad)
 
-    scale_factor = position[6]
     scaled_vertices = vertices * scale_factor
 
     x, y, z = scaled_vertices.T
@@ -106,7 +108,7 @@ def translate(vertices, position):
 
     translated = np.column_stack((x, y, z))
 
-    translated += position[:3]
+    translated += pos
 
     return translated
 
@@ -142,10 +144,10 @@ def renderCPU(scene, camera, surface, zbuffer, Res, Objects, ObjectData, lights)
 
         vertices = translate(vertices, np.asarray(position))
         tris = vertices
-        fov = camera[6]
-        cam = camera[0:3]
+        fov = camera[2][0]
+        cam = camera[0]
         c = -camera
-        c[6] = 1
+        c[2][0] = 1
         vertices = translate(vertices, c)
         ResF = min(Res[0], Res[1])
         projected = project(vertices, fov, ResF, np.asarray(Res))

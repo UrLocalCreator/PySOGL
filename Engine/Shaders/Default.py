@@ -34,10 +34,11 @@ def fragment(xyz, cam, uvw, VData, lights, colors, dith, diffuse):
         light_intensity *= lcolor
         if np.max(light_intensity) > 0:
             d = normalize(d)
-            a = d[0] * n[0] + d[1] * n[1] + d[2] * n[2]
+            diff = ((d[0] * n[0] + d[1] * n[1] + d[2] * n[2] + 1) / 2)
+
             v = normalize(d_norm + d)
             spec = np.maximum(0, (v[0] * n[0] + v[1] * n[1] + v[2] * n[2])) ** (1 / (diffuse ** 2))
-            diff = ((a + 1) / 2)
+
             light_intensity *= diff + spec
             color += light_intensity
 
