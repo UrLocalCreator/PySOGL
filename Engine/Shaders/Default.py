@@ -46,7 +46,6 @@ def fragment(xyz, cam, uvw, VData, lights, colors, dith, diffuse):
         lightr = light_intensity * (diff + spec)
         lightr *= lcolor
         for j in nb.prange(len(lcolor)):
-            # shader
             color[j] += lightr[j]
 
     # Dithering
