@@ -1,7 +1,5 @@
 from Engine.Loader import *
 
-from Engine.Shaders.Default import *
-
 
 @nb.njit(nogil=True, parallel=True, fastmath=True)
 def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights, shader, ShaderS):
@@ -132,7 +130,7 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights, 
                                         color = color * colors
 
                                     color = np.minimum(255, color)
-                                    surface[x, y] = color #fragment(xyz, cam, [u, v, w], VData, lights, 255, True, 0.2)
+                                    surface[x, y] = color
                                 else:
                                     surface[x, y] = (u * 255, v * 255, w * 255)
 
