@@ -25,7 +25,7 @@ while running:
 
     ResolutionX, ResolutionY, RResolutionX, RResolutionY = resize_window(RRResolutionX, RRResolutionY)
     screen_buffer, zbuffer = init_surface(np.array([RResolutionX, RResolutionY]), 1)
-    rad = math.pi/180
+    rad = np.pi/180
     rad *= otime/10
 
     mx, my = pygame.mouse.get_pos()
@@ -36,8 +36,8 @@ while running:
     sun = 1000000/4
 
     lights.append([[100000, 100000, 0], [sun, sun, sun], [0, 0, 0], [1, 0.2, 0]])
-    lights.append([[-4, 0, -7], [2, 1, 0], [0, 0, 0], [1, 0.2, 0]])
-    lights.append([[10, 0, 3], [0, 1, 2], [0, 0, 0], [1, 0.2, 0]])
+    lights.append([[-4, 0, -7], [8/4, 4/4, 0], [0, 0, 0], [1, 0.2, 0]])
+    lights.append([[10, 0, 3], [0, 4/4, 8/4], [0, 0, 0], [1, 0.2, 0]])
 
     # scene.append(["Engine/Objects/Ayaka/Ayaka.obj", [[0, -1.7, 0.5], [mx + 180, -90, 0], [0.1, 0, 0]]])
     scene.append(["Engine/Objects/Suzanne/Suzanne.obj", [[0, 0, 3], [mx + 180,  my, 0], [1, 0, 0]]])

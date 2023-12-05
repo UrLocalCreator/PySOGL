@@ -4,9 +4,9 @@ from Engine.Shaders.Default import *
 
 
 @nb.njit(nogil=True, parallel=True, fastmath=True)
-def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
-    for i in nb.prange(len(faces)):
-        vnormals = 0
+def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights, shader, ShaderS):
+    # for i in nb.prange(len(faces)):
+    #     vnormals = 0
     for i in nb.prange(len(faces)):
         j = faces[i]
         vert = vertices[j]
@@ -49,11 +49,14 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
                     slope1 = (vy[2, 0] - vy[0, 0]) / (vy[2, 1] - vy[0, 1] + epsilon)
                     slope2 = (vy[1, 0] - vy[0, 0]) / (vy[1, 1] - vy[0, 1] + epsilon)
                     slope3 = (vy[2, 0] - vy[1, 0]) / (vy[2, 1] - vy[1, 1] + epsilon)
+                    #Shader Code num1
+                    a = tri2 - tri1
+                    b = tri3 - tri1
+                    cr = np.array([a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]])
+                    VData = [(cr / np.sqrt(np.sum(cr ** 2)))]
 
-                    VData = shader([tri1, tri2, tri3])
-
-                    y1 = max(math.ceil(vy[0, 1]), 0)
-                    y2 = min(math.ceil(vy[2, 1]), Res[1] - 1)
+                    y1 = max(np.ceil(vy[0, 1]), 0)
+                    y2 = min(np.ceil(vy[2, 1]), Res[1] - 1)
 
                     for y in nb.prange(y1, y2):
                         dy = y - vy[0, 1]
@@ -66,8 +69,8 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
                         if x1 > x2:
                             x1, x2 = x2, x1
 
-                        x1 = max(math.ceil(x1), 0)
-                        x2 = min(math.ceil(x2), Res[0] - 1)
+                        x1 = max(np.ceil(x1), 0)
+                        x2 = min(np.ceil(x2), Res[0] - 1)
 
                         for x in nb.prange(x1, x2):
                             d6 = x - x3
@@ -81,9 +84,57 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights):
 
                             if zv < zbuffer[x, y]:
                                 zbuffer[x, y] = zv
+                                #Shader Code num2
+                                if shader == "Default":
+                                    xyz = tri1 * u + tri2 * v + tri3 * w
 
-                                xyz = tri1 * u + tri2 * v + tri3 * w
-                                surface[x, y] = fragment(xyz, cam, [u, v, w], VData, lights, 255, True, 0.2)
+                                    colors = ShaderS[0]
+                                    dith = ShaderS[1] == 1
+                                    diffuse = ShaderS[2]
+                                    lcolor = np.asarray([255.0, 255.0, 255.0])
+                                    n = VData[0]
+                                    color = np.zeros_like(lcolor)
+                                    cr = cam - xyz
+                                    d_norm = cr / np.sqrt(np.sum(cr ** 2))
+                                    for j in nb.prange(len(lights)):
+                                        light = lights[j]
+                                        d = light[0] - xyz
+                                        ds = np.sqrt(np.sum(d ** 2))
+                                        dist = (ds / light[3][0]) ** (1 + light[3][1])
+
+                                        light_intensity = light[1] / dist
+                                        light_intensity *= lcolor
+                                        if round(max(light_intensity)) > 0:
+                                            d = d / ds
+                                            diff = ((d[0] * n[0] + d[1] * n[1] + d[2] * n[2] + 1) / 2)
+                                            cr = d_norm + d
+                                            v = cr / np.sqrt(np.sum(cr ** 2))
+                                            spec = max(0, (v[0] * n[0] + v[1] * n[1] + v[2] * n[2])) ** (1 / (diffuse ** 2))
+
+                                            light_intensity *= diff + spec
+                                            color += light_intensity
+
+                                    # Dithering
+                                    colors = 255 / colors
+                                    if colors > 1:
+                                        color /= colors
+                                    if dith:
+                                        for k in nb.prange(len(color)):
+                                            o = color[k]
+                                            seed = 9834579
+                                            seed = seed * 315325887822453 + 141861939145533
+                                            xyz = xyz * 315325887822453 + 141861939145533
+                                            c = ((seed * xyz[0] * xyz[1] * xyz[2]) % 999999999999999) / 999999999999999
+                                            color[k] = np.floor(o) if (c > o - np.floor(o)) else np.ceil(o)
+                                    else:
+                                        color = np.round(color)
+                                    if colors > 1:
+                                        color = color * colors
+
+                                    color = np.minimum(255, color)
+                                    surface[x, y] = color #fragment(xyz, cam, [u, v, w], VData, lights, 255, True, 0.2)
+                                else:
+                                    surface[x, y] = (u * 255, v * 255, w * 255)
 
     return surface
 
@@ -93,10 +144,10 @@ def translate(vertices, position):
     pos = position[0]
     rot = position[1]
     scale_factor = position[2][0]
-    rad = math.pi / 180
-    cosX, sinX = math.cos(rot[0] * rad), math.sin(rot[0] * rad)
-    cosY, sinY = math.cos(rot[1] * rad), math.sin(rot[1] * rad)
-    cosZ, sinZ = math.cos(rot[2] * rad), math.sin(rot[2] * rad)
+    rad = np.pi / 180
+    cosX, sinX = np.cos(rot[0] * rad), np.sin(rot[0] * rad)
+    cosY, sinY = np.cos(rot[1] * rad), np.sin(rot[1] * rad)
+    cosZ, sinZ = np.cos(rot[2] * rad), np.sin(rot[2] * rad)
 
     scaled_vertices = vertices * scale_factor
 
@@ -151,4 +202,4 @@ def renderCPU(scene, camera, surface, zbuffer, Res, Objects, ObjectData, lights)
         vertices = translate(vertices, c)
         ResF = min(Res[0], Res[1])
         projected = project(vertices, fov, ResF, np.asarray(Res))
-        fill_object(np.asarray(faces), projected, tris, cam, uvs, surface, zbuffer, np.asarray(Res), np.asarray(lights))
+        fill_object(np.asarray(faces), projected, tris, cam, uvs, surface, zbuffer, np.asarray(Res), np.asarray(lights),"Default", np.array([255, 1, 0.2]))
