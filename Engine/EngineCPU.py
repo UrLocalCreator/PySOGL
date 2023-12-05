@@ -3,16 +3,17 @@ from Engine.Loader import *
 
 @nb.njit(nogil=True, parallel=True, fastmath=True)
 def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights, shader, ShaderS):
+    R = Res - 1
     # for i in nb.prange(len(faces)):
     #     vnormals = 0
     for i in nb.prange(len(faces)):
         j = faces[i]
         vert = vertices[j]
         min_x = max(min(vert[:, 0]), 0)
-        max_x = min(max(vert[:, 0]), Res[0] / 2 - 1)
+        max_x = min(max(vert[:, 0]), R[0])
         min_y = max(min(vert[:, 1]), 0)
-        max_y = min(max(vert[:, 1]), Res[1] / 2 - 1)
-        if max_x >= 0 and min_x < Res[0] and max_y >= 0 and min_y < Res[1]:
+        max_y = min(max(vert[:, 1]), R[1])
+        if max_x >= 0 and min_x < R[0] and max_y >= 0 and min_y < R[1]:
             vert1 = vert[0]
             vert2 = vert[1]
             vert3 = vert[2]
@@ -47,6 +48,7 @@ def fill_object(faces, vertices, tris, cam, uvs, surface, zbuffer, Res, lights, 
                     slope1 = (vy[2, 0] - vy[0, 0]) / (vy[2, 1] - vy[0, 1] + epsilon)
                     slope2 = (vy[1, 0] - vy[0, 0]) / (vy[1, 1] - vy[0, 1] + epsilon)
                     slope3 = (vy[2, 0] - vy[1, 0]) / (vy[2, 1] - vy[1, 1] + epsilon)
+
                     #Shader Code num1
                     a = tri2 - tri1
                     b = tri3 - tri1
